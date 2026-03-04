@@ -1,0 +1,236 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   FONTS — CoolCity AI Design System
+   Display: Bricolage Grotesque (futuristic, editorial)
+   Body: Sora (clean, technical)
+   Mono: JetBrains Mono
+   ============================================================ */
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/assets/fonts/BricolageGrotesque-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sora";
+  src: url("/assets/fonts/Sora-Variable.woff2") format("woff2");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/assets/fonts/JetBrainsMono-Variable.woff2") format("woff2");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   DESIGN TOKENS — Smart City Dark Theme
+   Primary: Cyan (data/interactive)
+   Accent: Emerald (positive/cooling)
+   Warning: Amber (medium heat)
+   Destructive: Red (high heat)
+   Neutral: Slate-based dark
+   ============================================================ */
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+
+    /* Dark theme as default */
+    --background: 0.12 0.008 240;
+    --foreground: 0.92 0.01 220;
+
+    --card: 0.15 0.012 240;
+    --card-foreground: 0.92 0.01 220;
+
+    --popover: 0.18 0.015 240;
+    --popover-foreground: 0.92 0.01 220;
+
+    /* Cyan primary */
+    --primary: 0.78 0.18 195;
+    --primary-foreground: 0.08 0.02 240;
+
+    --secondary: 0.20 0.018 240;
+    --secondary-foreground: 0.85 0.01 220;
+
+    --muted: 0.22 0.016 240;
+    --muted-foreground: 0.58 0.015 230;
+
+    /* Emerald accent */
+    --accent: 0.73 0.18 155;
+    --accent-foreground: 0.08 0.02 140;
+
+    /* Red destructive */
+    --destructive: 0.62 0.24 27;
+    --destructive-foreground: 0.98 0 0;
+
+    --border: 0.28 0.025 240;
+    --input: 0.22 0.02 240;
+    --ring: 0.78 0.18 195;
+
+    /* Chart colors */
+    --chart-1: 0.78 0.18 195;
+    --chart-2: 0.73 0.18 155;
+    --chart-3: 0.75 0.19 55;
+    --chart-4: 0.62 0.24 27;
+    --chart-5: 0.68 0.22 300;
+
+    /* Sidebar */
+    --sidebar: 0.10 0.008 240;
+    --sidebar-foreground: 0.85 0.01 220;
+    --sidebar-primary: 0.78 0.18 195;
+    --sidebar-primary-foreground: 0.08 0.02 240;
+    --sidebar-accent: 0.18 0.015 240;
+    --sidebar-accent-foreground: 0.85 0.01 220;
+    --sidebar-border: 0.22 0.02 240;
+    --sidebar-ring: 0.78 0.18 195;
+
+    /* Custom CoolCity tokens */
+    --heat-red: 0.62 0.24 27;
+    --heat-orange: 0.72 0.22 50;
+    --heat-yellow: 0.82 0.2 80;
+    --heat-green: 0.72 0.2 150;
+    --cyan-glow: 0.78 0.18 195;
+    --emerald-glow: 0.73 0.18 155;
+
+    color-scheme: dark;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Sora", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ============================================================
+   LEAFLET MAP OVERRIDES
+   ============================================================ */
+
+.leaflet-container {
+  background: #0a0f1e !important;
+}
+
+.leaflet-control-zoom {
+  border: 1px solid oklch(var(--border)) !important;
+  background: oklch(var(--card)) !important;
+}
+
+.leaflet-control-zoom a {
+  background: oklch(var(--card)) !important;
+  color: oklch(var(--foreground)) !important;
+  border-bottom: 1px solid oklch(var(--border)) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: oklch(var(--muted)) !important;
+}
+
+.leaflet-control-attribution {
+  background: oklch(0.08 0.008 240 / 0.85) !important;
+  color: oklch(var(--muted-foreground)) !important;
+  font-size: 10px !important;
+}
+
+.leaflet-tooltip {
+  background: oklch(0.12 0.012 240 / 0.95) !important;
+  border: 1px solid oklch(var(--border)) !important;
+  color: oklch(var(--foreground)) !important;
+  border-radius: 6px !important;
+  font-family: "Sora", sans-serif !important;
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+  box-shadow: 0 4px 16px oklch(0 0 0 / 0.5) !important;
+}
+
+.leaflet-tooltip::before {
+  border-top-color: oklch(var(--border)) !important;
+}
+
+/* ============================================================
+   CUSTOM ANIMATIONS & UTILITIES
+   ============================================================ */
+
+@layer utilities {
+  .text-display {
+    font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  }
+
+  .text-mono {
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  .glow-cyan {
+    box-shadow: 0 0 20px oklch(0.78 0.18 195 / 0.3), 0 0 40px oklch(0.78 0.18 195 / 0.1);
+  }
+
+  .glow-emerald {
+    box-shadow: 0 0 20px oklch(0.73 0.18 155 / 0.3), 0 0 40px oklch(0.73 0.18 155 / 0.1);
+  }
+
+  .glow-red {
+    box-shadow: 0 0 20px oklch(0.62 0.24 27 / 0.4), 0 0 40px oklch(0.62 0.24 27 / 0.15);
+  }
+
+  .panel-border {
+    border: 1px solid oklch(var(--border));
+    background: oklch(var(--card));
+  }
+
+  .panel-glass {
+    background: oklch(0.14 0.012 240 / 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid oklch(0.30 0.025 240 / 0.6);
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(oklch(0.28 0.025 240 / 0.15) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.28 0.025 240 / 0.15) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+
+/* slide-right for the simulating loading bar */
+@keyframes slide-right {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: oklch(0.12 0.008 240);
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.28 0.025 240);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.78 0.18 195 / 0.5);
+}
