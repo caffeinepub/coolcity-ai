@@ -1,44 +1,50 @@
-# CoolCity AI – Into Fresh Urban
+# CoolCity AI – Mobile Layout
 
 ## Current State
-New project. No existing code.
+The app is a desktop 3-panel layout:
+- Fixed `w-80` left sidebar (AI Recommendations + zone list)
+- Full-height center map
+- Fixed `w-[360px]` right sidebar (simulation controls + results)
+- Collapsible bottom analytics bar
+- TopNav header with desktop stats
+
+Everything uses `flex-row` layout, wide fixed widths, and hidden-sm classes — entirely unusable on mobile.
 
 ## Requested Changes (Diff)
 
 ### Add
-- Interactive city heatmap using Leaflet.js with color-coded zones (red/yellow/green) representing heat intensity
-- Urban cooling simulator: users click a map location and apply strategies (plant trees, green roofs, water bodies, reflective surfaces)
-- AI cooling prediction: formula-based model simulating ML output — predicts temperature reduction based on number of trees, vegetation density, building density, and land surface temperature
-- Smart recommendation system: analyzes heat zones and surfaces top 3 hottest areas with recommended interventions
-- Visualization dashboard: charts for predicted temperature reduction, sustainability score, and carbon absorption impact
-- Metrics panel: displays before/after temperature, cooling effect delta, sustainability score
-- Full-width smart city dashboard layout with sidebar navigation, map panel, analytics panel, and cooling impact graphs
-- Simulated city heat data (grid-based lat/lng points with temperature values for a sample city)
+- Mobile-first bottom tab navigation (4 tabs: Map, Zones, Simulate, Analytics)
+- Swipeable/tappable panel views for each tab
+- Mobile-aware TopNav that shows compact title + live badge only
+- Full-screen map view on Map tab with overlay controls (legend, zone tooltip)
+- Scrollable zones list view (AI Recommendations + zone list combined)
+- Simulation panel as a vertically scrolling full-screen view
+- Analytics tab with zone temperature chart and history chart stacked vertically
+- Floating action button on map view: "Select Zone → Simulate" shortcut
+- Mobile-sized touch targets (min 44px) on all interactive elements
+- Active zone summary pill pinned above bottom nav on Map tab
 
 ### Modify
-- N/A (new project)
+- `App.tsx` — add tab state management, render correct view per tab, pass mobile context
+- `TopNav.tsx` — hide desktop stat row; show only logo + live badge on mobile; use responsive breakpoints
+- `LeftPanel.tsx` — repurpose as `ZonesView` (full-screen vertical scroll, no fixed width)
+- `RightPanel.tsx` — repurpose as `SimulateView` (full-screen vertical scroll, no fixed width)
+- `AnalyticsBar.tsx` — repurpose as `AnalyticsView` (full-screen stacked charts, no bottom bar toggle on mobile)
+- `CityMap.tsx` — make map full-screen on mobile, adjust overlays to not conflict with top/bottom bars
 
 ### Remove
-- N/A (new project)
+- Desktop side-by-side 3-column `flex-row` layout (replaced by tab-based layout on mobile, kept on desktop via responsive breakpoints)
 
 ## Implementation Plan
-
-### Backend (Motoko)
-- `CityZone` type: id, name, lat, lng, baseTemperature, vegetationDensity, buildingDensity
-- `SimulationResult` type: zoneId, strategy, treesAdded, predictedTempReduction, sustainabilityScore, carbonAbsorption, timestamp
-- Store zones as stable array of pre-seeded city heat zone data (20+ zones across a sample city grid)
-- `getZones()` -> returns all city zones with heat data
-- `simulateCooling(zoneId, strategy, treesAdded, vegetationDensity)` -> runs prediction formula, stores and returns SimulationResult
-- `getSimulationHistory()` -> returns past simulations
-- `getRecommendations()` -> returns top 3 zones with highest heat reduction potential
-- `getAnalytics()` -> returns aggregated stats (avg temp, total carbon saved, avg sustainability score)
-- Prediction formula: tempReduction = (treesAdded * 0.15) + (vegetationDensity * 0.8) + (strategy bonus) — simulates ML regression output
-
-### Frontend
-- Dashboard layout: top nav bar, left sidebar with zone list and recommendations, main content area
-- Map panel: Leaflet map centered on sample city, heatmap overlay using circle markers colored by temperature, clickable markers to select zones
-- Simulation panel: selected zone info, strategy selector (4 options), sliders for tree count and vegetation density, "Run Simulation" CTA
-- Results card: shows current temp, predicted temp after intervention, cooling effect delta, sustainability score, carbon absorption
-- Analytics panel: line/bar charts for temperature trends across zones, sustainability scores per strategy
-- AI Recommendation panel: top 3 hottest zones with recommended actions and estimated cooling effect
-- Responsive layout optimized for desktop dashboard use
+1. Update `App.tsx`:
+   - Add `activeTab` state (`"map" | "zones" | "simulate" | "analytics"`)
+   - On mobile: render tab-based single-screen layout
+   - On desktop (md+): keep existing 3-panel layout
+   - Pass `onTabChange` to components that need to navigate (e.g., Recommend → Simulate)
+2. Create `BottomNav.tsx` — 4 icon+label tabs with active state, fixed to bottom
+3. Update `TopNav.tsx` — compact on mobile, full stats on md+
+4. Create `ZonesView.tsx` — full-screen scrollable mobile view combining AI recommendations + zone list
+5. Create `SimulateView.tsx` — full-screen scrollable mobile simulation panel
+6. Create `AnalyticsView.tsx` — full-screen stacked analytics charts for mobile
+7. Update `CityMap.tsx` — ensure overlays (legend, zone pill) respect safe areas and nav heights
+8. Apply `safe-area` padding for iOS notch/home bar

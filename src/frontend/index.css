@@ -234,3 +234,11 @@
 ::-webkit-scrollbar-thumb:hover {
   background: oklch(0.78 0.18 195 / 0.5);
 }
+
+/* Safe area support for mobile */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}

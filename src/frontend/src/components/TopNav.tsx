@@ -82,13 +82,13 @@ export default function TopNav() {
       <div className="flex items-center gap-2">
         <Badge
           variant="outline"
-          className="text-[10px] border-primary/30 text-primary bg-primary/10 font-mono hidden sm:flex"
+          className="text-[10px] border-primary/30 text-primary bg-primary/10 font-mono hidden md:flex"
         >
           AI-Powered
         </Badge>
         <Badge
           variant="outline"
-          className="text-[10px] border-emerald-500/30 text-emerald-400 bg-emerald-500/10 font-mono hidden sm:flex"
+          className="text-[10px] border-emerald-500/30 text-emerald-400 bg-emerald-500/10 font-mono hidden md:flex"
         >
           GIS Active
         </Badge>

@@ -1,10 +1,14 @@
 import { Toaster } from "@/components/ui/sonner";
 import { useCallback, useState } from "react";
 import AnalyticsBar from "./components/AnalyticsBar";
+import AnalyticsView from "./components/AnalyticsView";
+import BottomNav from "./components/BottomNav";
 import CityMap from "./components/CityMap";
 import LeftPanel from "./components/LeftPanel";
 import RightPanel from "./components/RightPanel";
+import SimulateView from "./components/SimulateView";
 import TopNav from "./components/TopNav";
+import ZonesView from "./components/ZonesView";
 import {
   type AIRecommendation,
   type CityZone,
@@ -17,6 +21,8 @@ import {
 
 let simulationCounter = 0;
 
+type MobileTab = "map" | "zones" | "simulate" | "analytics";
+
 export default function App() {
   const [selectedZone, setSelectedZone] = useState<CityZone | null>(null);
   const [simulationResults, setSimulationResults] = useState<
@@ -27,6 +33,7 @@ export default function App() {
     null,
   );
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<MobileTab>("map");
 
   // Pre-fill strategy from AI recommendation
   const [prefilledStrategy, setPrefilledStrategy] =
@@ -80,13 +87,23 @@ export default function App() {
     [selectedZone],
   );
 
+  // Mobile: when zone is tapped on map, switch to simulate tab
+  const handleMapZoneSelect = useCallback(
+    (zone: CityZone) => {
+      handleZoneSelect(zone);
+    },
+    [handleZoneSelect],
+  );
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background grid-bg">
       {/* Top Navigation */}
       <TopNav />
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* ================================================================
+          DESKTOP LAYOUT (md+): original 3-panel layout
+          ================================================================ */}
+      <div className="hidden md:flex flex-1 overflow-hidden">
         {/* Left Panel */}
         <LeftPanel
           recommendations={aiRecommendations}
@@ -116,13 +133,80 @@ export default function App() {
         />
       </div>
 
-      {/* Bottom Analytics Bar */}
-      <AnalyticsBar
-        isOpen={isAnalyticsOpen}
-        onToggle={() => setIsAnalyticsOpen((v) => !v)}
-        zones={cityZones}
-        simulationResults={simulationResults}
-      />
+      {/* Desktop Analytics Bar */}
+      <div className="hidden md:block">
+        <AnalyticsBar
+          isOpen={isAnalyticsOpen}
+          onToggle={() => setIsAnalyticsOpen((v) => !v)}
+          zones={cityZones}
+          simulationResults={simulationResults}
+        />
+      </div>
+
+      {/* ================================================================
+          MOBILE LAYOUT (< md): tab-based single view + BottomNav
+          ================================================================ */}
+      <div
+        className="flex md:hidden flex-1 flex-col overflow-hidden"
+        style={{
+          paddingBottom: "calc(3.5rem + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
+        {/* Map tab */}
+        <div
+          className={`flex-1 overflow-hidden ${activeTab === "map" ? "flex" : "hidden"}`}
+        >
+          <CityMap
+            zones={cityZones}
+            selectedZone={selectedZone}
+            onZoneSelect={handleMapZoneSelect}
+            simulationResults={simulationResults}
+            onGoToSimulate={() => setActiveTab("simulate")}
+            isMobile={true}
+          />
+        </div>
+
+        {/* Zones tab */}
+        <div
+          className={`flex-1 overflow-hidden ${activeTab === "zones" ? "flex flex-col" : "hidden"}`}
+        >
+          <ZonesView
+            recommendations={aiRecommendations}
+            zones={cityZones}
+            selectedZone={selectedZone}
+            onZoneSelect={handleZoneSelect}
+            onRecommendationSimulate={handleRecommendationSimulate}
+            onTabChange={(tab) => setActiveTab(tab as MobileTab)}
+          />
+        </div>
+
+        {/* Simulate tab */}
+        <div
+          className={`flex-1 overflow-hidden ${activeTab === "simulate" ? "flex flex-col" : "hidden"}`}
+        >
+          <SimulateView
+            selectedZone={selectedZone}
+            isSimulating={isSimulating}
+            latestResult={latestResult}
+            prefilledStrategy={prefilledStrategy}
+            onRunSimulation={handleRunSimulation}
+            onGoToZones={() => setActiveTab("zones")}
+          />
+        </div>
+
+        {/* Analytics tab */}
+        <div
+          className={`flex-1 overflow-hidden ${activeTab === "analytics" ? "flex flex-col" : "hidden"}`}
+        >
+          <AnalyticsView
+            zones={cityZones}
+            simulationResults={simulationResults}
+          />
+        </div>
+      </div>
+
+      {/* Mobile Bottom Nav */}
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
 
       <Toaster />
     </div>
