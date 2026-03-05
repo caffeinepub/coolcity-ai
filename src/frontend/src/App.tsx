@@ -15,6 +15,7 @@ import {
   type CoolingStrategy,
   type SimulationResult,
   cityZones,
+  findNearestZone,
   getAIRecommendations,
   predictCooling,
 } from "./data/cityData";
@@ -43,6 +44,14 @@ export default function App() {
 
   const handleZoneSelect = useCallback((zone: CityZone) => {
     setSelectedZone(zone);
+    setLatestResult(null);
+    setPrefilledStrategy(null);
+  }, []);
+
+  // Handle click anywhere on map — find nearest zone
+  const handleLocationClick = useCallback((lat: number, lng: number) => {
+    const nearest = findNearestZone(lat, lng);
+    setSelectedZone(nearest);
     setLatestResult(null);
     setPrefilledStrategy(null);
   }, []);
@@ -95,6 +104,14 @@ export default function App() {
     [handleZoneSelect],
   );
 
+  // Mobile: click anywhere on map → nearest zone
+  const handleMobileLocationClick = useCallback(
+    (lat: number, lng: number) => {
+      handleLocationClick(lat, lng);
+    },
+    [handleLocationClick],
+  );
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background grid-bg">
       {/* Top Navigation */}
@@ -119,6 +136,7 @@ export default function App() {
             zones={cityZones}
             selectedZone={selectedZone}
             onZoneSelect={handleZoneSelect}
+            onLocationClick={handleLocationClick}
             simulationResults={simulationResults}
           />
         </main>
@@ -160,6 +178,7 @@ export default function App() {
             zones={cityZones}
             selectedZone={selectedZone}
             onZoneSelect={handleMapZoneSelect}
+            onLocationClick={handleMobileLocationClick}
             simulationResults={simulationResults}
             onGoToSimulate={() => setActiveTab("simulate")}
             isMobile={true}

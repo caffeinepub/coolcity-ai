@@ -2,13 +2,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
+  AlertTriangle,
   ArrowRight,
+  BookOpen,
   Building2,
+  Flame,
   Leaf,
   Loader2,
   MapPin,
   Play,
   Sparkles,
+  TreePine,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -57,6 +61,17 @@ export default function RightPanel({
     }
   }, [prefilledStrategy]);
 
+  // Pre-fill tree slider with AI recommended count when zone is selected
+  useEffect(() => {
+    if (selectedZone) {
+      const recommended = Math.min(
+        selectedZone.treeRecommendation.totalNeeded,
+        200,
+      );
+      setTreesAdded(recommended);
+    }
+  }, [selectedZone]);
+
   return (
     <aside
       className="w-[360px] flex flex-col border-l border-border overflow-hidden"
@@ -70,6 +85,9 @@ export default function RightPanel({
           <ZoneHeader zone={selectedZone} />
 
           <div className="flex-1 overflow-y-auto">
+            {/* AI Diagnosis Section */}
+            <AIDiagnosis zone={selectedZone} />
+
             {/* Controls section */}
             <div className="p-3 space-y-4">
               {/* Strategy Selector */}
@@ -192,6 +210,270 @@ export default function RightPanel({
 }
 
 // ============================================================
+// AI Diagnosis Section — Heat Causes + Tree Recommendations
+// ============================================================
+
+function AIDiagnosis({ zone }: { zone: CityZone }) {
+  const [expanded, setExpanded] = useState(true);
+  const { treeRecommendation } = zone;
+
+  return (
+    <div
+      className="mx-3 mt-3 rounded-xl overflow-hidden"
+      style={{
+        border: "1px solid oklch(0.62 0.24 27 / 0.3)",
+        background: "oklch(0.11 0.010 240)",
+      }}
+      data-ocid="ai.diagnosis_panel"
+    >
+      {/* Header */}
+      <button
+        type="button"
+        className="w-full flex items-center justify-between px-3 py-2.5 text-left"
+        style={{
+          background:
+            "linear-gradient(90deg, oklch(0.62 0.24 27 / 0.12) 0%, transparent 100%)",
+          borderBottom: expanded
+            ? "1px solid oklch(0.62 0.24 27 / 0.2)"
+            : "none",
+        }}
+        onClick={() => setExpanded((v) => !v)}
+        data-ocid="ai.diagnosis_toggle"
+      >
+        <div className="flex items-center gap-2">
+          <Flame
+            className="w-3.5 h-3.5"
+            style={{ color: "oklch(0.72 0.22 27)" }}
+          />
+          <span
+            className="text-[11px] font-mono font-bold uppercase tracking-widest"
+            style={{ color: "oklch(0.72 0.22 27)" }}
+          >
+            AI Heat Diagnosis
+          </span>
+        </div>
+        <span className="text-[10px] text-muted-foreground/50 font-mono">
+          {expanded ? "▲" : "▼"}
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="p-3 space-y-3">
+          {/* Heat Cause Badges */}
+          <div>
+            <div className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest mb-1.5">
+              Why is it hot here?
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {zone.heatCauses.map((cause) => (
+                <span
+                  key={cause}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold"
+                  style={{
+                    background: "oklch(0.62 0.24 27 / 0.15)",
+                    border: "1px solid oklch(0.62 0.24 27 / 0.4)",
+                    color: "oklch(0.78 0.18 50)",
+                  }}
+                >
+                  <AlertTriangle className="w-2.5 h-2.5" />
+                  {cause}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Cause Description */}
+          <div
+            className="rounded-lg p-2.5 text-[11px] font-mono leading-relaxed text-muted-foreground"
+            style={{ background: "oklch(0.15 0.012 240)" }}
+          >
+            {zone.causeDescription}
+          </div>
+
+          {/* Real World Example */}
+          <div
+            className="rounded-lg p-2.5"
+            style={{
+              background: "oklch(0.73 0.18 155 / 0.06)",
+              border: "1px solid oklch(0.73 0.18 155 / 0.2)",
+            }}
+          >
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <BookOpen
+                className="w-3 h-3"
+                style={{ color: "oklch(0.73 0.18 155)" }}
+              />
+              <span
+                className="text-[9px] font-mono font-bold uppercase tracking-widest"
+                style={{ color: "oklch(0.73 0.18 155)" }}
+              >
+                Real World Examples
+              </span>
+            </div>
+            <p className="text-[10px] font-mono leading-relaxed text-muted-foreground">
+              {zone.realWorldExample}
+            </p>
+          </div>
+
+          {/* Tree Recommendation Breakdown */}
+          <div
+            className="rounded-lg overflow-hidden"
+            style={{ border: "1px solid oklch(0.73 0.18 155 / 0.25)" }}
+          >
+            <div
+              className="px-3 py-2 flex items-center justify-between"
+              style={{
+                background: "oklch(0.73 0.18 155 / 0.08)",
+                borderBottom: "1px solid oklch(0.73 0.18 155 / 0.2)",
+              }}
+            >
+              <div className="flex items-center gap-1.5">
+                <TreePine className="w-3 h-3" style={{ color: "#22c55e" }} />
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-400">
+                  AI Tree Prescription
+                </span>
+              </div>
+              <span
+                className="text-[14px] font-display font-black tabular-nums"
+                style={{ color: "#22c55e" }}
+              >
+                {treeRecommendation.totalNeeded}
+              </span>
+            </div>
+
+            <div className="divide-y divide-[oklch(0.18_0.016_240)]">
+              <TreeRow
+                label="Shade Trees"
+                count={treeRecommendation.shade}
+                total={treeRecommendation.totalNeeded}
+                color="oklch(0.73 0.18 155)"
+                emoji="🌳"
+                note="Oaks, Maples, Planes"
+              />
+              <TreeRow
+                label="Fruit Trees"
+                count={treeRecommendation.fruit}
+                total={treeRecommendation.totalNeeded}
+                color="oklch(0.82 0.2 80)"
+                emoji="🍎"
+                note="Cherry, Apple, Plum"
+              />
+              <TreeRow
+                label="Ornamental"
+                count={treeRecommendation.ornamental}
+                total={treeRecommendation.totalNeeded}
+                color="oklch(0.78 0.18 195)"
+                emoji="🌸"
+                note="Dogwood, Redbud"
+              />
+            </div>
+
+            {/* Cooling per 10 trees */}
+            <div
+              className="px-3 py-2 flex items-center justify-between"
+              style={{
+                background: "oklch(0.13 0.012 240)",
+                borderTop: "1px solid oklch(0.18 0.016 240)",
+              }}
+            >
+              <span className="text-[10px] font-mono text-muted-foreground">
+                Cooling per 10 trees planted
+              </span>
+              <span className="text-[12px] font-mono font-bold text-emerald-400">
+                −{treeRecommendation.coolingPerTree}°C
+              </span>
+            </div>
+
+            {/* Priority species */}
+            <div
+              className="px-3 py-2"
+              style={{
+                background: "oklch(0.12 0.010 240)",
+                borderTop: "1px solid oklch(0.18 0.016 240)",
+              }}
+            >
+              <div className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest mb-1">
+                Priority Species
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {treeRecommendation.prioritySpecies.map((sp) => (
+                  <span
+                    key={sp}
+                    className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                    style={{
+                      background: "oklch(0.73 0.18 155 / 0.1)",
+                      color: "oklch(0.73 0.18 155)",
+                      border: "1px solid oklch(0.73 0.18 155 / 0.2)",
+                    }}
+                  >
+                    {sp}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TreeRow({
+  label,
+  count,
+  total,
+  color,
+  emoji,
+  note,
+}: {
+  label: string;
+  count: number;
+  total: number;
+  color: string;
+  emoji: string;
+  note: string;
+}) {
+  const pct = Math.round((count / total) * 100);
+  return (
+    <div className="px-3 py-2" style={{ background: "oklch(0.12 0.010 240)" }}>
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm">{emoji}</span>
+          <div>
+            <div className="text-[11px] font-mono font-semibold text-foreground leading-none">
+              {label}
+            </div>
+            <div className="text-[9px] font-mono text-muted-foreground/60 mt-0.5">
+              {note}
+            </div>
+          </div>
+        </div>
+        <div className="text-right">
+          <div
+            className="text-[14px] font-display font-black tabular-nums"
+            style={{ color }}
+          >
+            {count}
+          </div>
+          <div className="text-[9px] font-mono text-muted-foreground/50">
+            {pct}%
+          </div>
+        </div>
+      </div>
+      <div
+        className="h-1 rounded-full overflow-hidden"
+        style={{ background: "oklch(0.20 0.018 240)" }}
+      >
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${pct}%`, background: color }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // Animated loading bar
 // ============================================================
 
@@ -237,17 +519,18 @@ function EmptyState() {
         />
       </div>
       <h3 className="text-sm font-display font-bold text-foreground mb-1.5">
-        Select a Zone
+        Click the Map to Analyze
       </h3>
       <p className="text-xs text-muted-foreground leading-relaxed max-w-[200px] mb-5">
-        Click any zone on the map to begin AI cooling simulation
+        Click anywhere on the real-world map to get AI heat diagnosis, causes,
+        and exact tree recommendations
       </p>
       <div className="flex flex-col gap-1.5 w-full">
         {[
-          ["🌳", "Plant trees & vegetation"],
-          ["🏡", "Add green roof coverage"],
-          ["💧", "Create water features"],
-          ["⬜", "Apply reflective surfaces"],
+          ["🔥", "Identify heat causes"],
+          ["🌳", "Get tree prescription"],
+          ["🌍", "Real-world examples"],
+          ["📊", "Simulate cooling impact"],
         ].map(([icon, label]) => (
           <div
             key={label}

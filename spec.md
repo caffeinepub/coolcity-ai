@@ -1,50 +1,39 @@
-# CoolCity AI – Mobile Layout
+# CoolCity AI – Real-World Click-to-Analyze Map
 
 ## Current State
-The app is a desktop 3-panel layout:
-- Fixed `w-80` left sidebar (AI Recommendations + zone list)
-- Full-height center map
-- Fixed `w-[360px]` right sidebar (simulation controls + results)
-- Collapsible bottom analytics bar
-- TopNav header with desktop stats
-
-Everything uses `flex-row` layout, wide fixed widths, and hidden-sm classes — entirely unusable on mobile.
+The app has a Leaflet map using CartoDB dark matter tiles centered on NYC. Users can only click pre-defined circular zone markers (20 fixed NYC zones). Each zone has static temperature, building density, and vegetation data. The simulation panel shows cooling strategy results, but does not explain WHY a location is hot or give specific tree-count recommendations with real-world context.
 
 ## Requested Changes (Diff)
 
 ### Add
-- Mobile-first bottom tab navigation (4 tabs: Map, Zones, Simulate, Analytics)
-- Swipeable/tappable panel views for each tab
-- Mobile-aware TopNav that shows compact title + live badge only
-- Full-screen map view on Map tab with overlay controls (legend, zone tooltip)
-- Scrollable zones list view (AI Recommendations + zone list combined)
-- Simulation panel as a vertically scrolling full-screen view
-- Analytics tab with zone temperature chart and history chart stacked vertically
-- Floating action button on map view: "Select Zone → Simulate" shortcut
-- Mobile-sized touch targets (min 44px) on all interactive elements
-- Active zone summary pill pinned above bottom nav on Map tab
+- **Click-anywhere map interaction**: User can click any point on the real map (not just pre-defined markers). Clicking reveals lat/lng coordinates and reverse-geocodes to a real address/neighborhood name.
+- **AI Heat Diagnosis panel**: After clicking a location, the AI analyzes: (1) current estimated temperature for that area, (2) specific causes of high heat (e.g. concrete coverage, building density, lack of green space, industrial activity), (3) real-world context (e.g. "This area is similar to Midtown Manhattan which records 42°C in summer").
+- **AI Tree Recommendation**: After analysis, the AI recommends a specific number of trees to plant, broken down by type (shade trees, fruit trees, ornamental) with expected cooling effect per tree type.
+- **Satellite/Street tile toggle**: Allow switching between dark city map and OpenStreetMap/satellite view for real-world visual context.
+- **Heat cause badges**: Visual tags explaining WHY the selected area is hot (e.g. "High Asphalt Coverage", "No Tree Canopy", "Industrial Zone", "Dense Building Grid").
+- **Real-world examples**: Show real city examples of successful urban greening (e.g. "Singapore's 'City in a Garden' reduced urban temps by 4°C with 7 million trees").
+- **Expanded CityZone type**: Add fields for `heatCauses`, `realWorldExample`, `treeRecommendation` (count by type), and `causeDescription`.
 
 ### Modify
-- `App.tsx` — add tab state management, render correct view per tab, pass mobile context
-- `TopNav.tsx` — hide desktop stat row; show only logo + live badge on mobile; use responsive breakpoints
-- `LeftPanel.tsx` — repurpose as `ZonesView` (full-screen vertical scroll, no fixed width)
-- `RightPanel.tsx` — repurpose as `SimulateView` (full-screen vertical scroll, no fixed width)
-- `AnalyticsBar.tsx` — repurpose as `AnalyticsView` (full-screen stacked charts, no bottom bar toggle on mobile)
-- `CityMap.tsx` — make map full-screen on mobile, adjust overlays to not conflict with top/bottom bars
+- **CityMap**: Replace click-only-on-marker with also click-on-map behavior. Add tile layer switcher (dark / street / satellite). Show a crosshair cursor over the map. Display a pulsing pin at the last clicked location.
+- **CityZone data**: Enrich all 20 NYC zones with detailed heat cause tags, real-world comparison examples, and AI tree breakdown recommendations.
+- **RightPanel**: Show new AI Diagnosis section above the cooling strategy controls. Include heat cause badges, cause description, real-world example box, and tree recommendation breakdown.
+- **SimulateView (mobile)**: Same AI Diagnosis section added at top.
 
 ### Remove
-- Desktop side-by-side 3-column `flex-row` layout (replaced by tab-based layout on mobile, kept on desktop via responsive breakpoints)
+- Nothing removed.
 
 ## Implementation Plan
-1. Update `App.tsx`:
-   - Add `activeTab` state (`"map" | "zones" | "simulate" | "analytics"`)
-   - On mobile: render tab-based single-screen layout
-   - On desktop (md+): keep existing 3-panel layout
-   - Pass `onTabChange` to components that need to navigate (e.g., Recommend → Simulate)
-2. Create `BottomNav.tsx` — 4 icon+label tabs with active state, fixed to bottom
-3. Update `TopNav.tsx` — compact on mobile, full stats on md+
-4. Create `ZonesView.tsx` — full-screen scrollable mobile view combining AI recommendations + zone list
-5. Create `SimulateView.tsx` — full-screen scrollable mobile simulation panel
-6. Create `AnalyticsView.tsx` — full-screen stacked analytics charts for mobile
-7. Update `CityMap.tsx` — ensure overlays (legend, zone pill) respect safe areas and nav heights
-8. Apply `safe-area` padding for iOS notch/home bar
+1. Extend `CityZone` type with: `heatCauses: string[]`, `causeDescription: string`, `realWorldExample: string`, `treeRecommendation: { shade: number; fruit: number; ornamental: number; totalNeeded: number; coolingPerTree: number }`.
+2. Enrich all 20 NYC zones in `cityData.ts` with the new fields using real-world data references.
+3. Add `getLocationAnalysis(lat, lng)` function that finds nearest zone or interpolates data for arbitrary map clicks.
+4. Update `CityMap.tsx`:
+   - Add map click handler (`map.on('click', ...)`) that triggers `onLocationClick(lat, lng)`
+   - Add tile layer switcher (3 options: dark, street, satellite)
+   - Show animated pin marker at clicked arbitrary location
+   - Keep existing zone circle markers
+5. Update `App.tsx` to handle `onLocationClick` — finds nearest zone or generates synthetic zone data for the clicked point.
+6. Update `RightPanel.tsx` and `SimulateView.tsx`:
+   - Add `AIDiagnosis` component showing: heat cause badges, cause description paragraph, real-world example card, and tree recommendation table (shade/fruit/ornamental counts)
+   - Place it above the existing strategy controls
+7. Update `LeftPanel.tsx` AI Recommendations to also show cause tags inline.
